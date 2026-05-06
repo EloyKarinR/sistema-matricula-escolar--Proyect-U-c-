@@ -1,0 +1,133 @@
+@startuml use-cases
+title Sistema de Matrícula Escolar - Casos de Uso (Preliminar)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Administrador" as Admin
+actor "Secretaría" as Sec
+actor "Docente" as Doc
+actor "Acudiente" as Acu
+
+rectangle "Sistema de Matrícula Escolar" {
+
+  package "Acceso" {
+    usecase "Iniciar sesión" as UC_Login
+    usecase "Cerrar sesión" as UC_Logout
+    usecase "Cambiar contraseña" as UC_Pwd
+  }
+
+  package "Administración" {
+    usecase "Gestionar usuarios" as UC_Users
+    usecase "Gestionar institución" as UC_Inst
+    usecase "Gestionar niveles y grados" as UC_NivGrad
+    usecase "Configurar año lectivo" as UC_AnioLec
+    usecase "Configurar aranceles" as UC_Aranc
+    usecase "Consultar auditoría" as UC_Audit
+  }
+
+  package "Personas" {
+    usecase "Gestionar estudiantes" as UC_Est
+    usecase "Gestionar acudientes" as UC_Acud
+    usecase "Gestionar docentes" as UC_Doc
+    usecase "Asignar acudiente a estudiante" as UC_AsignAcud
+  }
+
+  package "Académico" {
+    usecase "Gestionar paralelos" as UC_Par
+    usecase "Asignar docente a paralelo" as UC_AsignDoc
+    usecase "Definir materias por grado" as UC_Mat
+  }
+
+  package "Matrícula" {
+    usecase "Matricular estudiante" as UC_Matr
+    usecase "Validar prerrequisitos" as UC_Prereq
+    usecase "Generar comprobante" as UC_Compr
+    usecase "Anular matrícula" as UC_AnulMatr
+  }
+
+  package "Pagos" {
+    usecase "Registrar pago" as UC_Pago
+    usecase "Consultar estado de cuenta" as UC_EstCta
+    usecase "Emitir recibo PDF" as UC_Recibo
+  }
+
+  package "Calificaciones" {
+    usecase "Registrar notas" as UC_Notas
+    usecase "Cerrar trimestre" as UC_Cerrar
+    usecase "Consultar notas del estudiante" as UC_VerNotas
+  }
+
+  package "Reportes" {
+    usecase "Lista de clase" as UC_Lista
+    usecase "Récord académico" as UC_Record
+    usecase "Certificado de matrícula" as UC_Certif
+    usecase "Estadísticas" as UC_Stats
+  }
+}
+
+' Acceso (todos)
+Admin --> UC_Login
+Sec   --> UC_Login
+Doc   --> UC_Login
+Acu   --> UC_Login
+
+Admin --> UC_Logout
+Sec   --> UC_Logout
+Doc   --> UC_Logout
+Acu   --> UC_Logout
+
+Admin --> UC_Pwd
+Sec   --> UC_Pwd
+Doc   --> UC_Pwd
+Acu   --> UC_Pwd
+
+' Administración (Admin)
+Admin --> UC_Users
+Admin --> UC_Inst
+Admin --> UC_NivGrad
+Admin --> UC_AnioLec
+Admin --> UC_Aranc
+Admin --> UC_Audit
+
+' Personas (Secretaría)
+Sec --> UC_Est
+Sec --> UC_Acud
+Sec --> UC_Doc
+Sec --> UC_AsignAcud
+
+' Académico (Admin + Secretaría)
+Admin --> UC_Par
+Admin --> UC_AsignDoc
+Admin --> UC_Mat
+Sec   --> UC_Par
+
+' Matrícula (Secretaría)
+Sec --> UC_Matr
+Sec --> UC_AnulMatr
+UC_Matr ..> UC_Prereq : <<include>>
+UC_Matr ..> UC_Compr : <<include>>
+
+' Pagos
+Sec --> UC_Pago
+Sec --> UC_EstCta
+Acu --> UC_EstCta
+UC_Pago ..> UC_Recibo : <<include>>
+
+' Calificaciones
+Doc --> UC_Notas
+Doc --> UC_Cerrar
+Doc --> UC_VerNotas
+Acu --> UC_VerNotas
+Sec --> UC_VerNotas
+
+' Reportes
+Sec   --> UC_Lista
+Doc   --> UC_Lista
+Sec   --> UC_Record
+Acu   --> UC_Record
+Sec   --> UC_Certif
+Admin --> UC_Stats
+
+@enduml

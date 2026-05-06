@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "jebbs.plantuml",
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "twxs.cmake",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "eamodio.gitlens"
+  ]
+}

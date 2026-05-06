@@ -1,0 +1,244 @@
+@startuml er-model
+title Sistema de Matrícula Escolar - Modelo Entidad-Relación (Preliminar)
+
+skinparam linetype ortho
+skinparam shadowing false
+hide circle
+
+' ──────────────────────────────────────
+' Acceso y auditoría
+' ──────────────────────────────────────
+entity Usuario {
+  * id_usuario : SERIAL <<PK>>
+  --
+  * username : VARCHAR(50) <<unique>>
+  * password_hash : VARCHAR(255)
+  * rol : ENUM('admin','secretaria','docente','acudiente')
+  * activo : BOOLEAN
+  ultimo_login : TIMESTAMP
+  fk_persona : INT
+}
+
+entity Auditoria {
+  * id_auditoria : BIGSERIAL <<PK>>
+  --
+  * fk_usuario : INT
+  * accion : VARCHAR(100)
+  * tabla : VARCHAR(50)
+  * fk_registro : INT
+  * payload : JSONB
+  * fecha : TIMESTAMP
+}
+
+' ──────────────────────────────────────
+' Personas
+' ──────────────────────────────────────
+entity Estudiante {
+  * id_estudiante : SERIAL <<PK>>
+  --
+  * cedula : VARCHAR(20) <<unique>>
+  * nombres : VARCHAR(100)
+  * apellidos : VARCHAR(100)
+  * fecha_nacimiento : DATE
+  * genero : CHAR(1)
+  direccion : VARCHAR(255)
+  telefono : VARCHAR(20)
+  foto_url : VARCHAR(255)
+}
+
+entity Acudiente {
+  * id_acudiente : SERIAL <<PK>>
+  --
+  * cedula : VARCHAR(20) <<unique>>
+  * nombres : VARCHAR(100)
+  * apellidos : VARCHAR(100)
+  * telefono : VARCHAR(20)
+  email : VARCHAR(100)
+  direccion : VARCHAR(255)
+  ocupacion : VARCHAR(100)
+}
+
+entity EstudianteAcudiente {
+  * id_estudiante : INT <<FK,PK>>
+  * id_acudiente : INT <<FK,PK>>
+  --
+  * parentesco : VARCHAR(50)
+  * es_principal : BOOLEAN
+}
+
+entity Docente {
+  * id_docente : SERIAL <<PK>>
+  --
+  * cedula : VARCHAR(20) <<unique>>
+  * nombres : VARCHAR(100)
+  * apellidos : VARCHAR(100)
+  telefono : VARCHAR(20)
+  email : VARCHAR(100)
+  especialidad : VARCHAR(100)
+}
+
+' ──────────────────────────────────────
+' Estructura académica
+' ──────────────────────────────────────
+entity Institucion {
+  * id_institucion : SERIAL <<PK>>
+  --
+  * nombre : VARCHAR(150)
+  codigo_meduca : VARCHAR(20)
+  direccion : VARCHAR(255)
+  telefono : VARCHAR(20)
+  logo_url : VARCHAR(255)
+}
+
+entity Nivel {
+  * id_nivel : SERIAL <<PK>>
+  --
+  * nombre : VARCHAR(50)
+  -- ('Preescolar','Primaria','Premedia','Media')
+  orden : INT
+}
+
+entity Grado {
+  * id_grado : SERIAL <<PK>>
+  --
+  * fk_nivel : INT
+  * nombre : VARCHAR(50)
+  -- ('1°','2°',…,'12° Bachillerato Ciencias')
+  bachillerato : VARCHAR(50)
+}
+
+entity Paralelo {
+  * id_paralelo : SERIAL <<PK>>
+  --
+  * fk_grado : INT
+  * fk_anio_lectivo : INT
+  * letra : CHAR(1)
+  * cupo_maximo : INT
+  fk_docente_guia : INT
+}
+
+entity Materia {
+  * id_materia : SERIAL <<PK>>
+  --
+  * codigo : VARCHAR(20)
+  * nombre : VARCHAR(100)
+  * fk_grado : INT
+}
+
+entity AsignacionDocente {
+  * id_asignacion : SERIAL <<PK>>
+  --
+  * fk_paralelo : INT
+  * fk_materia : INT
+  * fk_docente : INT
+}
+
+entity AnioLectivo {
+  * id_anio_lectivo : SERIAL <<PK>>
+  --
+  * anio : INT <<unique>>
+  * fecha_inicio : DATE
+  * fecha_fin : DATE
+  * estado : ENUM('planificado','activo','cerrado')
+}
+
+entity Trimestre {
+  * id_trimestre : SERIAL <<PK>>
+  --
+  * fk_anio_lectivo : INT
+  * numero : INT
+  * fecha_inicio : DATE
+  * fecha_fin : DATE
+  * cerrado : BOOLEAN
+}
+
+' ──────────────────────────────────────
+' Matrícula
+' ──────────────────────────────────────
+entity Matricula {
+  * id_matricula : SERIAL <<PK>>
+  --
+  * fk_estudiante : INT
+  * fk_paralelo : INT
+  * fk_anio_lectivo : INT
+  * fecha_matricula : DATE
+  * estado : ENUM('activa','retirada','aprobada','reprobada')
+  observaciones : TEXT
+}
+
+' ──────────────────────────────────────
+' Pagos
+' ──────────────────────────────────────
+entity Arancel {
+  * id_arancel : SERIAL <<PK>>
+  --
+  * fk_anio_lectivo : INT
+  * fk_grado : INT
+  * concepto : VARCHAR(100)
+  -- ('matrícula','mensualidad','otros')
+  * monto : NUMERIC(10,2)
+  * mes_aplicable : INT
+}
+
+entity Pago {
+  * id_pago : SERIAL <<PK>>
+  --
+  * fk_matricula : INT
+  * fk_arancel : INT
+  * monto_pagado : NUMERIC(10,2)
+  * fecha_pago : DATE
+  metodo : VARCHAR(50)
+  numero_recibo : VARCHAR(50) <<unique>>
+}
+
+' ──────────────────────────────────────
+' Calificaciones
+' ──────────────────────────────────────
+entity Calificacion {
+  * id_calificacion : SERIAL <<PK>>
+  --
+  * fk_matricula : INT
+  * fk_materia : INT
+  * fk_trimestre : INT
+  * nota : NUMERIC(3,1)
+  -- (1.0 a 5.0, mínimo 3.0)
+  observaciones : TEXT
+}
+
+' ──────────────────────────────────────
+' Relaciones
+' ──────────────────────────────────────
+Usuario             }o--|| Estudiante         : opcional
+Usuario             }o--|| Acudiente          : opcional
+Usuario             }o--|| Docente            : opcional
+Usuario             ||--o{ Auditoria          : genera
+
+Estudiante          ||--o{ EstudianteAcudiente
+Acudiente           ||--o{ EstudianteAcudiente
+
+Institucion         ||--o{ Nivel
+Nivel               ||--o{ Grado
+Grado               ||--o{ Paralelo
+Grado               ||--o{ Materia
+AnioLectivo         ||--o{ Paralelo
+AnioLectivo         ||--o{ Trimestre
+AnioLectivo         ||--o{ Arancel
+Grado               ||--o{ Arancel
+
+Paralelo            ||--o{ AsignacionDocente
+Materia             ||--o{ AsignacionDocente
+Docente             ||--o{ AsignacionDocente
+Docente             ||--o{ Paralelo            : guía
+
+Estudiante          ||--o{ Matricula
+Paralelo            ||--o{ Matricula
+AnioLectivo         ||--o{ Matricula
+
+Matricula           ||--o{ Pago
+Arancel             ||--o{ Pago
+
+Matricula           ||--o{ Calificacion
+Materia             ||--o{ Calificacion
+Trimestre           ||--o{ Calificacion
+
+@enduml
