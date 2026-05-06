@@ -26,11 +26,12 @@ Si preferís editar visualmente, podés importar el `.puml` en https://app.diagr
 |---|---|---|
 | [use-cases.puml](use-cases.puml) | Casos de uso por actor | Preliminar |
 | [er-model.puml](er-model.puml) | Modelo Entidad-Relación de la base de datos | Preliminar |
+| [deployment.puml](deployment.puml) | Despliegue: Qt Client → Crow API → PostgreSQL | Preliminar |
 
 ## Pendientes
 
-- [ ] Diagrama de clases del dominio
-- [ ] Diagrama de secuencia: matriculación
+- [ ] Diagrama de clases del dominio (server + client)
+- [ ] Diagrama de secuencia: login con JWT
+- [ ] Diagrama de secuencia: matriculación (flujo HTTP)
 - [ ] Diagrama de secuencia: registro de pago
-- [ ] Diagrama de secuencia: registro de notas
-- [ ] Diagrama de despliegue (cliente-servidor)
+- [ ] Diagrama de componentes (arquitectura de 3 capas)

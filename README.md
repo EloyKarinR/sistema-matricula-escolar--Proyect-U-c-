@@ -17,10 +17,13 @@ El sistema modela la estructura del sistema educativo panameño (Preescolar, Pri
 | Capa | Tecnología |
 |---|---|
 | Lenguaje | C++17 |
+| **API server** | **Crow (C++, header-only REST framework)** |
+| **Auth** | **JWT (jwt-cpp)** |
+| **Driver BD (server)** | **libpqxx (C++ nativo)** |
 | Interfaz gráfica | Qt 6 (Widgets) |
+| **HTTP client (Qt)** | **QNetworkAccessManager** |
 | Sistema de build | CMake |
 | Base de datos | PostgreSQL 16 |
-| Driver BD | QtSql con `QPSQL` |
 | Reportes | QPrinter / QPdfWriter + QtCharts |
 | IDE | Qt Creator (código) · VSCode (docs) |
 | Compilador | MinGW (Windows) |
@@ -31,20 +34,26 @@ El sistema modela la estructura del sistema educativo panameño (Preescolar, Pri
 ## Arquitectura
 
 ```
-   ┌────────────┐    ┌────────────┐    ┌────────────┐
-   │ Cliente Qt │    │ Cliente Qt │    │ Cliente Qt │
-   │ (Secretaría)│   │ (Docente)  │    │ (Acudiente)│
-   └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
-         │                 │                 │
-         └─────────────────┼─────────────────┘
-                           │ TCP/IP
-                  ┌────────▼────────┐
-                  │   PostgreSQL    │
-                  │     Servidor    │
-                  └─────────────────┘
+  ┌────────────┐    ┌────────────┐    ┌────────────┐
+  │ Cliente Qt │    │ Cliente Qt │    │ Cliente Qt │
+  │ (Secretaría)│   │ (Docente)  │    │ (Admin)    │
+  └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │ HTTP/JSON + JWT
+                 ┌────────▼────────┐
+                 │  Crow REST API  │  ← lógica de negocio
+                 │   Server C++    │    validaciones, reglas
+                 └────────┬────────┘
+                          │ SQL (libpqxx)
+                 ┌────────▼────────┐
+                 │   PostgreSQL    │  ← integridad, auditoría
+                 └─────────────────┘
 ```
 
-Varios clientes Qt se conectan a un único servidor PostgreSQL central. La lógica de negocio reside en la aplicación cliente; la base de datos se ocupa de la integridad referencial, restricciones y auditoría a nivel de fila.
+**Arquitectura de 3 capas:** los clientes Qt nunca acceden directamente a la base de datos — toda la comunicación pasa por el API REST en C++ (Crow). Esto desacopla la presentación de la lógica y permite escalar el servidor horizontalmente.
+
+Ver [arquitectura escalable](docs/arquitectura-escalable.md) para el diseño de producción con load balancer, réplicas y multi-tenancy.
 
 ## Estructura del repositorio
 

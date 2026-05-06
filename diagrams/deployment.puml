@@ -1,0 +1,70 @@
+@startuml deployment
+title Sistema de Matrícula Escolar - Diagrama de Despliegue
+
+skinparam shadowing false
+skinparam node {
+  BackgroundColor #f5f5f5
+  BorderColor #333333
+}
+
+' ─── Clientes ───
+node "PC Secretaría\n(Windows)" as PCsec {
+  artifact "Qt Client\n(matricula-client.exe)" as ClientSec
+}
+
+node "PC Docente\n(Windows)" as PCdoc {
+  artifact "Qt Client\n(matricula-client.exe)" as ClientDoc
+}
+
+node "PC Dirección\n(Windows)" as PCdir {
+  artifact "Qt Client\n(matricula-client.exe)" as ClientDir
+}
+
+' ─── Servidor ───
+node "Servidor de Aplicación\n(Windows/Linux)" as AppServer {
+  artifact "Crow REST API Server\n(matricula-server.exe)\nPuerto 8080" as CrowServer
+}
+
+' ─── Base de datos ───
+node "Servidor de Base de Datos\n(Windows/Linux)" as DBServer {
+  database "PostgreSQL 16\nPuerto 5432" as PG
+}
+
+' ─── Conexiones ───
+ClientSec --> CrowServer : HTTP/JSON + JWT\n(puerto 8080)
+ClientDoc --> CrowServer : HTTP/JSON + JWT\n(puerto 8080)
+ClientDir --> CrowServer : HTTP/JSON + JWT\n(puerto 8080)
+
+CrowServer --> PG : SQL\n(libpqxx)
+
+' ─── Notas ───
+note right of CrowServer
+  Lógica de negocio:
+  - Validación de JWT
+  - Reglas de matrícula
+  - Cálculo de promedios
+  - Generación de reportes PDF
+end note
+
+note right of PG
+  Integridad de datos:
+  - Restricciones FK
+  - Triggers de auditoría
+  - Procedimientos almacenados
+end note
+
+' ─── Leyenda producción ───
+legend right
+  Implementado en este proyecto:
+  Qt Client + Crow Server + PostgreSQL
+
+  En producción se agregaría:
+  • Load Balancer (nginx)
+  • Múltiples instancias del server
+  • PgBouncer (connection pool)
+  • Réplica de lectura de PostgreSQL
+  • Redis (caché de sesiones)
+  • Drogon en lugar de Crow (Linux)
+endlegend
+
+@enduml
