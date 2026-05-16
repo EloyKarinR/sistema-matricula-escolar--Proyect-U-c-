@@ -1,5 +1,6 @@
 {
   "recommendations": [
+    "yzane.markdown-pdf",
     "jebbs.plantuml",
     "ms-vscode.cpptools",
     "ms-vscode.cmake-tools",
